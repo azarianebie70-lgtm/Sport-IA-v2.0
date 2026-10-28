@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020"><title>SportIA — Analyse sportive</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{color-scheme:dark;--bg:#090e1b;--panel:#111a2d;--panel2:#17233a;--text:#f2f5ff;--muted:#9aa9c4;--accent:#70e1b5;--blue:#7ca7ff;--line:#263450}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#17294a 0,transparent 38%),var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:22px 16px 16px;max-width:900px;margin:auto}h1{margin:0;font-size:28px;letter-spacing:-.8px}h1 span{color:var(--accent)}.sub{color:var(--muted);margin-top:6px}
+main{max-width:900px;margin:auto;padding:0 14px 40px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+button,select,input{font:inherit;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);padding:11px 12px}
+button{cursor:pointer}button.primary{background:var(--accent);color:#07131a;border:0;font-weight:800}.tab.active{border-color:var(--accent);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.card{background:linear-gradient(145deg,var(--panel),#0f1728);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.8px}.match{font-size:17px;font-weight:750;margin:8px 0}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{font-size:12px;border-radius:20px;padding:5px 9px;background:#20314c;color:var(--blue)}.muted{color:var(--muted)}.bars{display:grid;gap:9px;margin:14px 0}.barline{display:grid;grid-template-columns:92px 1fr 44px;gap:8px;align-items:center;font-size:13px}.track{height:8px;border-radius:20px;background:#26334b;overflow:hidden}.fill{height:100%;background:var(--accent);border-radius:20px}.notice{border-left:3px solid #e7bb65;padding:10px 12px;background:#211d19;color:#e8d7b6;border-radius:8px;font-size:13px;line-height:1.5}.small{font-size:12px;color:var(--muted);line-height:1.5}.field{display:grid;gap:6px;margin:10px 0}.field input,.field select{width:100%}.hidden{display:none}.stat{font-size:24px;font-weight:800}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}.mini-stat{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:12px}.mini-stat strong{display:block;font-size:21px;margin-top:5px}.player-row{display:grid;grid-template-columns:1.2fr repeat(5,minmax(42px,1fr));gap:7px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.player-row.head{color:var(--muted);font-size:11px;text-transform:uppercase}.player-row span:not(:first-child){text-align:center}.metric-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px}.metric-inputs .field{margin:5px 0}.footer{text-align:center;color:var(--muted);font-size:12px;padding:16px}
+@media(min-width:650px){header{padding-top:30px}h1{font-size:34px}}
+</style>
+</head>
+<body>
+<header><div class="row"><div><h1>Sport<span>IA</span></h1><div class="sub">Analyse sportive • Football & Basketball</div></div><span class="pill">BÊTA · v0.1</span></div></header>
+<main>
+<div class="toolbar"><button class="tab active" data-sport="football">⚽ Football</button><button class="tab" data-sport="basketball">🏀 Basketball</button><button id="refresh">↻ Actualiser</button></div>
+<div class="card">
+ <div class="row"><div><div class="label">Rencontres</div><h2 style="margin:5px 0">Matchs à analyser</h2></div><span id="sourceBadge" class="pill">Mode démo</span></div>
+ <p class="small" id="sourceText">Les exemples ci-dessous sont fictifs. Configure une API pour obtenir des données réelles.</p>
+ <div class="field"><label for="apiBase">URL de ton API (facultatif)</label><input id="apiBase" placeholder="https://ton-serveur.example/api/matches"><div class="small">L’API doit renvoyer un tableau JSON de matchs. Ne colle jamais une clé secrète ici.</div></div>
+ <button class="primary" id="loadApi">Charger les données de l’API</button>
+</div>
+<div id="matches" class="grid"></div>
+<section class="card" id="advancedCard">
+ <div class="row"><div><div class="label">Statistiques avancées</div><h2 style="margin:5px 0" id="advancedTitle">Indicateurs de match</h2></div><span class="pill">Analyse descriptive</span></div>
+ <p class="small" id="advancedIntro">Exemples fictifs à remplacer par des statistiques vérifiées.</p>
+ <div id="advancedContent"></div>
+</section>
+<div class="card">
+ <div class="row"><div><div class="label">Analyse personnalisée</div><h2 style="margin:5px 0">Comparer deux équipes</h2></div><span class="pill">Modèle simple</span></div>
+ <div class="grid">
+  <div class="field"><label for="home">Équipe A</label><input id="home" value="Équipe A"></div>
+  <div class="field"><label for="away">Équipe B</label><input id="away" value="Équipe B"></div>
+  <div class="field"><label for="formA">Forme récente A (0–100)</label><input id="formA" type="number" min="0" max="100" value="65"></div>
+  <div class="field"><label for="formB">Forme récente B (0–100)</label><input id="formB" type="number" min="0" max="100" value="55"></div>
+ </div>
+ <button class="primary" id="analyze">Calculer les estimations</button>
+ <div id="analysisResult" style="margin-top:14px"></div>
+</div>
+<div class="notice"><b>Important :</b> les probabilités sont des estimations illustratives, pas des certitudes. En mode démo, elles ne proviennent pas de données en direct ni d’un modèle d’IA entraîné. Les blessures, compositions, calendrier et la qualité des données peuvent changer l’issue d’un match. Cette application n’encourage pas à miser de l’argent.</div>
+<div class="footer">SportIA • Prototype mobile • Données réelles uniquement si une API compatible est configurée.</div>
+</main>
+<script>
+const demo={
+ football:[
+  {home:"Équipe locale",away:"Équipe visiteuse",league:"Exemple de football",date:"Données fictives",a:62,b:48,draw:26,desc:"Forme indicative uniquement"},
+  {home:"Club Bleu",away:"Club Vert",league:"Exemple de football",date:"Données fictives",a:44,b:58,draw:27,desc:"Aucun résultat réel utilisé"}
+ ],
+ basketball:[
+  {home:"Équipe domicile",away:"Équipe extérieure",league:"Exemple de basketball",date:"Données fictives",a:61,b:39,draw:0,desc:"Estimation illustrative"},
+  {home:"Club Nord",away:"Club Sud",league:"Exemple de basketball",date:"Données fictives",a:53,b:47,draw:0,desc:"Aucun résultat réel utilisé"}
+ ]
+};
+let sport="football", matches=demo.football;
+const advancedDemo={
+ football:[
+  {name:"Équipe locale",corners:5.4,yellow:2.1,throwins:17.8,period:"Moyenne illustrative par match"},
+  {name:"Équipe visiteuse",corners:4.2,yellow:2.6,throwins:19.3,period:"Moyenne illustrative par match"}
+ ],
+ basketball:[
+  {name:"Joueur A",team:"Équipe domicile",minutes:31,points:22.4,rebounds:7.1,assists:5.8,steals:1.2,blocks:0.6},
+  {name:"Joueur B",team:"Équipe extérieure",minutes:28,points:16.8,rebounds:4.9,assists:3.7,steals:0.9,blocks:0.3},
+  {name:"Joueur C",team:"Équipe domicile",minutes:24,points:11.2,rebounds:8.3,assists:1.4,steals:0.7,blocks:1.1}
+ ]
+};
+const $=id=>document.getElementById(id);
+function render(){
+ $("matches").innerHTML=matches.map(m=>{
+  const a=Number(m.home_probability ?? m.a ?? 55), b=Number(m.away_probability ?? m.b ?? (100-a)), d=Number(m.draw_probability ?? m.draw ?? Math.max(0,100-a-b));
+  const isBasket=sport==="basketball";
+  return `<article class="card"><div class="row"><span class="pill">${escapeHtml(m.league|| (isBasket?"Basketball":"Football"))}</span><span class="small">${escapeHtml(m.date||"Horaire non fourni")}</span></div><div class="match">${escapeHtml(m.home||m.home_team||"Équipe A")} <span class="muted">vs</span> ${escapeHtml(m.away||m.away_team||"Équipe B")}</div><div class="bars">${bar(isBasket?"Victoire A":"Victoire A",a)}${!isBasket?bar("Match nul",d):""}${bar("Victoire B",b)}</div><div class="small">${escapeHtml(m.desc||"Probabilités reçues de l’API ; méthode à vérifier.")}</div></article>`;
+ }).join("");renderAdvanced();
+}
+function renderAdvanced(){
+ const host=$("advancedContent");
+ if(sport==="basketball") {
+  $("advancedTitle").textContent="Statistiques des joueurs";
+  $("advancedIntro").textContent="Exemples fictifs : moyennes de saison ou de matchs récents à remplacer par des données réelles. Les fourchettes sont indicatives et ne garantissent pas la performance d’un joueur.";
+  const players=matches.flatMap(m=>Array.isArray(m.players)?m.players:[]);
+  const data=players.length?players:advancedDemo.basketball;
+  host.innerHTML=`<div class="player-row head"><span>Joueur</span><span>PTS</span><span>REB</span><span>PD</span><span>INT</span><span>CTR</span></div>`+data.map(p=>{const pts=Number(p.points??p.pts??0),reb=Number(p.rebounds??p.reb??0),ast=Number(p.assists??p.ast??0),stl=Number(p.steals??p.stl??0),blk=Number(p.blocks??p.blk??0);return `<div class="player-row"><span><b>${escapeHtml(p.name||p.player||"Joueur")}</b><br><span class="small">${escapeHtml(p.team||p.team_name||"Équipe non précisée")}</span></span><span>${pts.toFixed(1)}</span><span>${reb.toFixed(1)}</span><span>${ast.toFixed(1)}</span><span>${stl.toFixed(1)}</span><span>${blk.toFixed(1)}</span></div><div class="small" style="margin:5px 0 12px">Estimation illustrative : points ${Math.max(0,Math.round(pts-5))}–${Math.round(pts+5)} · rebonds ${Math.max(0,Math.round(reb-3))}–${Math.round(reb+3)} · basée sur une marge simple, pas sur un modèle validé.</div>`}).join("")+`<p class="small">PTS = points · REB = rebonds · PD = passes décisives · INT = interceptions · CTR = contres.</p>`;
+ } else {
+  $("advancedTitle").textContent="Indicateurs de football";
+  $("advancedIntro").textContent="Compare les moyennes historiques des équipes : corners obtenus, cartons jaunes et touches. Les valeurs ci-dessous sont fictives et ne constituent pas des recommandations de pari.";
+  const supplied=matches.flatMap(m=>Array.isArray(m.team_stats)?m.team_stats:[]);const data=supplied.length?supplied:advancedDemo.football;
+  host.innerHTML=`<div class="grid">`+data.map(t=>`<article class="mini-stat"><div class="label">${escapeHtml(t.name||t.team||"Équipe")}</div><div class="small">Moyenne par match</div><div class="stats-grid"><div><span class="small">Corners</span><strong>${Number(t.corners??t.corners_avg??0).toFixed(1)}</strong></div><div><span class="small">Cartons jaunes</span><strong>${Number(t.yellow??t.yellow_cards_avg??0).toFixed(1)}</strong></div><div><span class="small">Touches</span><strong>${Number(t.throwins??t.throw_ins_avg??0).toFixed(1)}</strong></div></div></article>`).join("")+`</div><div class="notice" style="margin-top:12px">Les touches ne sont pas suivies de façon uniforme par tous les fournisseurs. Une donnée absente doit rester « indisponible » plutôt que d’être inventée. Les moyennes historiques décrivent le jeu, elles ne prédisent pas avec certitude le prochain match.</div>`;
+ }
+}
+function bar(label,v){v=Math.max(0,Math.min(100,Number(v)||0));return `<div class="barline"><span>${label}</span><div class="track"><div class="fill" style="width:${v}%"></div></div><b>${v}%</b></div>`}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.querySelectorAll("[data-sport]").forEach(btn=>btn.addEventListener("click",()=>{sport=btn.dataset.sport;document.querySelectorAll("[data-sport]").forEach(b=>b.classList.toggle("active",b===btn));matches=demo[sport];$("sourceBadge").textContent="Mode démo";$("sourceText").textContent="Les exemples sont fictifs. Configure une API pour des données réelles.";render()}));
+$("refresh").addEventListener("click",()=>{matches=demo[sport];$("sourceBadge").textContent="Mode démo";render()});
+$("loadApi").addEventListener("click",async()=>{
+ const url=$("apiBase").value.trim();if(!url){alert("Entre l’URL de ton API d’abord.");return}
+ try{const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status);const data=await r.json();const arr=Array.isArray(data)?data:data.matches;if(!Array.isArray(arr))throw new Error("Le JSON doit être un tableau ou contenir matches: [].");
+ matches=arr;$("sourceBadge").textContent="API chargée";$("sourceText").textContent="Données chargées depuis l’URL indiquée. Vérifie leur date et leur source.";render()
+ }catch(e){alert("Impossible de charger l’API : "+e.message+". Vérifie l’URL, le format JSON et les règles CORS.");}
+});
+$("analyze").addEventListener("click",()=>{
+ const a=Math.max(0,Math.min(100,Number($("formA").value)||0)),b=Math.max(0,Math.min(100,Number($("formB").value)||0));
+ const pa=Math.round(100*(Math.exp((a-b)/18)/(1+Math.exp((a-b)/18))));const pb=100-pa;
+ const teamA=$("home").value.trim()||"Équipe A",teamB=$("away").value.trim()||"Équipe B";
+ $("analysisResult").innerHTML=`<div class="card"><div class="label">Résultat du calcul pédagogique</div><h3>${escapeHtml(teamA)} : ${pa}%</h3>${bar("Victoire A",pa)}<h3>${escapeHtml(teamB)} : ${pb}%</h3>${bar("Victoire B",pb)}<p class="small">Calcul basé uniquement sur les deux scores de forme saisis. Ce n’est pas une prédiction validée, ni une IA entraînée. Pour le football, le nul n’est pas modélisé ici ; pour le basketball, les prolongations et absences ne sont pas prises en compte.</p></div>`;
+});
+function init(){render();if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});}
+init();
+</script>
+</body></html>
